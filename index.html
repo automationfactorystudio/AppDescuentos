@@ -123,7 +123,7 @@
 
   /* BANNER PWA INSTALACIÓN */
   .pwa-banner{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    position:fixed;top:16px;left:50%;transform:translateX(-50%);
     width:calc(100% - 32px);max-width:480px;
     background:var(--blanco);border:1.5px solid var(--dorado);
     border-radius:16px;padding:14px 16px;
@@ -133,7 +133,7 @@
     display:none;
   }
   .pwa-banner.visible{display:flex;}
-  @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
   .pwa-banner-icon{width:44px;height:44px;background:var(--tierra);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:20px;color:var(--crema);flex-shrink:0;}
   .pwa-banner-texto{flex:1;}
   .pwa-banner-titulo{font-size:13px;font-weight:600;color:var(--texto);margin-bottom:2px;}
