@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppDeHoy — Calculadora de Descuentos y Rebajas</title>
+<meta name="theme-color" content="#8B5E3C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Descuentos">
+<link rel="manifest" href="manifest-descuentos.json">
+<link rel="apple-touch-icon" href="icon-appdeboy-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --crema:#FAF7F2;--crema2:#F2EDE4;--crema3:#E8DFD0;--blanco:#FFFFFF;
+    --tierra:#8B5E3C;--tierra-dk:#6B4423;--dorado:#C9A96E;
+    --salvia:#7A9E7E;--salvia-dk:#5C7D60;
+    --texto:#2C1810;--muted:#7A6355;--sutil:#B8A898;--borde:#E8DFD0;
+    --font-d:'Playfair Display',Georgia,serif;--font-b:'DM Sans',sans-serif;
+  }
+  [data-theme="dark"]{
+    --crema:#1C1510;--crema2:#251C15;--crema3:#2E2218;--blanco:#2A1F17;
+    --tierra:#D4956A;--tierra-dk:#E8AA80;--dorado:#C9A96E;
+    --salvia:#8FBB93;--salvia-dk:#A8CFA8;
+    --texto:#F0E8DF;--muted:#B09880;--sutil:#6B5545;--borde:#3D2E1E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--crema);color:var(--texto);font-family:var(--font-b);min-height:100vh;transition:background .3s,color .3s;}
+  .bg-deco{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(circle at 85% 10%,rgba(201,169,110,.09) 0%,transparent 45%),
+               radial-gradient(circle at 10% 90%,rgba(122,158,126,.08) 0%,transparent 40%);}
+  .wrap{max-width:560px;margin:0 auto;padding:0 20px 72px;position:relative;z-index:1;}
+
+  header{padding:28px 0 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--borde);margin-bottom:32px;}
+  .logo-icon{width:40px;height:40px;background:var(--tierra);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:20px;color:var(--crema);flex-shrink:0;}
+  .logo-text .brand{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--texto);line-height:1;}
+  .logo-text .brand span{color:var(--tierra);}
+  .logo-text .tagline{font-size:10px;color:var(--muted);margin-top:2px;}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+  .app-badge{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--tierra);background:rgba(139,94,60,.08);border:1px solid rgba(139,94,60,.2);padding:4px 10px;border-radius:20px;}
+  .theme-toggle{width:34px;height:34px;border-radius:10px;background:var(--crema2);border:1px solid var(--borde);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:15px;color:var(--muted);}
+  .theme-toggle:hover{border-color:var(--dorado);}
+
+  h1{font-family:var(--font-d);font-size:clamp(26px,5vw,38px);font-weight:900;line-height:1.1;margin-bottom:8px;}
+  h1 em{color:var(--tierra);font-style:italic;}
+  .divider{width:40px;height:3px;background:var(--dorado);border-radius:2px;margin:10px 0 12px;}
+  .subtitle{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:28px;}
+  .section-label{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;}
+
+  /* MODOS */
+  .modo-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--crema2);border-radius:12px;padding:4px;border:1px solid var(--borde);}
+  .modo-tab{flex:1;padding:9px 8px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s;user-select:none;border:none;background:transparent;}
+  .modo-tab.active{background:var(--blanco);color:var(--tierra);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+  /* CARD */
+  .card{background:var(--blanco);border:1.5px solid var(--dorado);border-radius:14px;padding:22px;margin-bottom:14px;}
+  .card-title{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--tierra);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+  /* INPUTS */
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  label{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+  input[type="number"]{background:var(--blanco);border:1.5px solid var(--dorado);border-radius:10px;color:var(--texto);font-family:var(--font-b);font-size:16px;padding:12px 14px;outline:none;width:100%;transition:border-color .2s;appearance:none;-webkit-appearance:none;}
+  input:focus{border-color:var(--tierra);box-shadow:0 0 0 3px rgba(139,94,60,.08);}
+
+  /* PORCENTAJES RÁPIDOS */
+  .pcts-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+  @media(max-width:400px){.pcts-grid{grid-template-columns:repeat(4,1fr);}}
+  .pct-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--borde);background:var(--crema2);text-align:center;cursor:pointer;transition:all .18s;user-select:none;font-size:13px;font-weight:500;color:var(--muted);}
+  .pct-btn:hover{border-color:var(--dorado);color:var(--tierra);}
+  .pct-btn.active{background:rgba(139,94,60,.1);border-color:var(--tierra);color:var(--tierra);font-weight:600;}
+
+  /* SLIDER DESCUENTO */
+  .slider-wrap{margin-top:6px;}
+  input[type="range"]{width:100%;height:4px;background:linear-gradient(to right,var(--tierra) 0%,var(--tierra) var(--pct,30%),var(--crema3) var(--pct,30%),var(--crema3) 100%);border-radius:2px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;border:none;padding:0;}
+  input[type="range"]::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:var(--tierra);border:2px solid #fff;cursor:pointer;box-shadow:0 1px 4px rgba(139,94,60,.3);}
+  .slider-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--sutil);margin-top:4px;}
+
+  /* RESULTADO PRINCIPAL */
+  .resultado-principal{background:var(--blanco);border:1.5px solid var(--salvia);border-top:4px solid var(--tierra);border-radius:14px;padding:22px;margin-bottom:12px;text-align:center;animation:aparecer .35s ease;}
+  @keyframes aparecer{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .res-antes{font-size:13px;color:var(--muted);margin-bottom:4px;}
+  .res-antes span{text-decoration:line-through;color:var(--muted);}
+  .res-precio{font-family:var(--font-d);font-size:58px;font-weight:900;color:var(--tierra);line-height:1;margin-bottom:4px;}
+  .res-precio small{font-size:28px;}
+  .res-ahorro{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(122,158,126,.12);border:1px solid rgba(122,158,126,.25);border-radius:20px;font-size:13px;font-weight:600;color:var(--salvia-dk);margin-top:8px;}
+  [data-theme="dark"] .res-ahorro{color:var(--salvia);}
+
+  /* GRID RESULTADO */
+  .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .res-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:11px;padding:14px;text-align:center;}
+  .rc-val{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--tierra);}
+  .rc-label{font-size:11px;color:var(--muted);margin-top:3px;}
+
+  /* COMPARADOR */
+  .comparador{display:none;}
+  .comparador.visible{display:block;}
+  .comp-item{background:var(--blanco);border:1.5px solid var(--borde);border-radius:11px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;animation:fadeUp .3s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .comp-rank{width:28px;height:28px;border-radius:50%;background:rgba(139,94,60,.12);font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--tierra);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .comp-rank.mejor{background:var(--tierra);color:var(--crema);}
+  .comp-info{flex:1;}
+  .comp-nombre{font-size:13px;font-weight:500;color:var(--texto);}
+  .comp-detalle{font-size:11px;color:var(--muted);}
+  .comp-precio{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--tierra);}
+  .comp-ahorro-badge{font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(122,158,126,.1);color:var(--salvia-dk);border:1px solid rgba(122,158,126,.2);}
+  [data-theme="dark"] .comp-ahorro-badge{color:var(--salvia);}
+
+  /* BOTÓN */
+  .btn-calc{width:100%;padding:14px;background:var(--tierra);color:var(--crema);border:none;border-radius:12px;font-family:var(--font-d);font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:16px;}
+  .btn-calc:hover{background:var(--tierra-dk);transform:translateY(-1px);}
+
+  /* AÑADIR AL COMPARADOR */
+  .btn-add-comp{width:100%;padding:10px;background:transparent;border:1.5px dashed var(--borde);border-radius:10px;font-family:var(--font-b);font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s;margin-bottom:14px;}
+  .btn-add-comp:hover{border-color:var(--dorado);color:var(--tierra);}
+
+  .error-box{background:rgba(192,57,43,.07);border:1.5px solid rgba(192,57,43,.2);border-left:4px solid #C0392B;border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;color:#8B2A18;display:none;margin-bottom:12px;}
+  [data-theme="dark"] .error-box{color:#E8A598;}
+
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .footer-brand{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--muted);}
+  .footer-brand span{color:var(--tierra);}
+  .footer-text{font-size:11px;color:var(--sutil);}
+</style>
+</head>
+<body>
+<div class="bg-deco"></div>
+<div class="wrap">
+
+  <header>
+    <div class="logo-icon">A</div>
+    <div class="logo-text">
+      <div class="brand">App<span>DeHoy</span></div>
+      <div class="tagline">Una app. Un problema. Resuelto.</div>
+    </div>
+    <div class="header-right">
+      <div class="app-badge">Descuentos</div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambiar tema">🌙</button>
+    </div>
+  </header>
+
+  <h1>¿Cuánto pagas<br><em>de verdad</em>?</h1>
+  <div class="divider"></div>
+  <p class="subtitle">Calcula el precio final con descuento, el dinero que ahorras y compara varias ofertas para elegir la mejor.</p>
+
+  <!-- MODOS -->
+  <div class="modo-tabs">
+    <div class="modo-tab active" onclick="cambiarModo('simple')">Descuento simple</div>
+    <div class="modo-tab" onclick="cambiarModo('doble')">Doble descuento</div>
+    <div class="modo-tab" onclick="cambiarModo('comparar')">Comparar ofertas</div>
+  </div>
+
+  <!-- MODO SIMPLE -->
+  <div id="modoSimple">
+    <div class="card">
+      <div class="card-title">🏷️ Precio y descuento</div>
+      <div class="field">
+        <label>Precio original (€)</label>
+        <input type="number" id="precioSimple" min="0" step="0.01" placeholder="ej: 89,99" oninput="calcSimple()"/>
+      </div>
+      <p class="section-label">Descuento</p>
+      <div class="pcts-grid" id="pctsBtns">
+        <div class="pct-btn" data-pct="10" onclick="selPct(this,10)">10%</div>
+        <div class="pct-btn" data-pct="20" onclick="selPct(this,20)">20%</div>
+        <div class="pct-btn active" data-pct="30" onclick="selPct(this,30)">30%</div>
+        <div class="pct-btn" data-pct="40" onclick="selPct(this,40)">40%</div>
+        <div class="pct-btn" data-pct="50" onclick="selPct(this,50)">50%</div>
+        <div class="pct-btn" data-pct="60" onclick="selPct(this,60)">60%</div>
+        <div class="pct-btn" data-pct="70" onclick="selPct(this,70)">70%</div>
+        <div class="pct-btn" data-pct="75" onclick="selPct(this,75)">75%</div>
+        <div class="pct-btn" data-pct="80" onclick="selPct(this,80)">80%</div>
+        <div class="pct-btn" data-pct="90" onclick="selPct(this,90)">90%</div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>O introduce el % exacto</label>
+        <input type="number" id="pctCustom" min="0" max="100" step="0.1" placeholder="ej: 35" oninput="calcSimple(true)"/>
+      </div>
+      <div class="slider-wrap" style="margin-top:8px;">
+        <input type="range" id="sliderPct" min="0" max="100" step="1" value="30"
+          oninput="sliderChange(this.value)"/>
+        <div class="slider-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      </div>
+    </div>
+
+    <!-- RESULTADO SIMPLE -->
+    <div id="resSimple" style="display:none;">
+      <div class="resultado-principal">
+        <div class="res-antes">Antes: <span id="resAntes">—</span></div>
+        <div class="res-precio" id="resPrecio">—<small> €</small></div>
+        <div class="res-ahorro" id="resAhorro">Ahorras — €</div>
+      </div>
+      <div class="res-grid">
+        <div class="res-card"><div class="rc-val" id="resDescuento">—</div><div class="rc-label">Descuento en €</div></div>
+        <div class="res-card"><div class="rc-val" id="resPct">—</div><div class="rc-label">% de descuento</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODO DOBLE DESCUENTO -->
+  <div id="modoDoble" style="display:none;">
+    <div class="card">
+      <div class="card-title">🏷️🏷️ Precio con dos descuentos</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Cuando hay un descuento adicional sobre el precio ya rebajado — por ejemplo 30% + 10% extra para socios.</p>
+      <div class="field">
+        <label>Precio original (€)</label>
+        <input type="number" id="precioDoble" min="0" step="0.01" placeholder="ej: 120"/>
+      </div>
+      <div class="field">
+        <label>Primer descuento (%)</label>
+        <input type="number" id="pct1" min="0" max="100" step="0.1" placeholder="ej: 30"/>
+      </div>
+      <div class="field">
+        <label>Segundo descuento (%)</label>
+        <input type="number" id="pct2" min="0" max="100" step="0.1" placeholder="ej: 10"/>
+      </div>
+      <button class="btn-calc" onclick="calcDoble()">✦ Calcular</button>
+      <div id="resDoble" style="display:none;">
+        <div class="resultado-principal">
+          <div class="res-antes">Antes: <span id="resAntesD">—</span></div>
+          <div class="res-precio" id="resPrecioD">—<small> €</small></div>
+          <div class="res-ahorro" id="resAhorroD">Ahorras — €</div>
+        </div>
+        <div class="res-grid">
+          <div class="res-card"><div class="rc-val" id="resDescuentoD">—</div><div class="rc-label">Descuento real total</div></div>
+          <div class="res-card"><div class="rc-val" id="resPctD">—</div><div class="rc-label">% real de descuento</div></div>
+        </div>
+        <div style="background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.2);border-left:4px solid var(--dorado);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.6;">
+          <strong style="color:var(--texto);">Ojo con el doble descuento:</strong> 30% + 10% <strong>no es lo mismo</strong> que 40%. El segundo descuento se aplica sobre el precio ya rebajado, por eso el descuento real es menor.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODO COMPARAR -->
+  <div id="modoComparar" style="display:none;">
+    <div class="card">
+      <div class="card-title">⚖️ Compara ofertas</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Añade varias tiendas u ofertas para ver cuál es la más barata de verdad.</p>
+      <div id="ofertasLista"></div>
+      <button class="btn-add-comp" onclick="addOferta()">+ Añadir oferta</button>
+      <button class="btn-calc" onclick="calcComparar()">✦ Comparar y encontrar la mejor</button>
+    </div>
+    <div class="comparador" id="comparadorRes"></div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <footer>
+    <div class="footer-brand">App<span>DeHoy</span></div>
+    <div class="footer-text">Sin internet · Sin registro · 100% gratuita</div>
+  </footer>
+</div>
+
+<script>
+  // ── Theme ──────────────────────────────────────────────
+  let theme=localStorage.getItem('appdeboy-theme')||'light';
+  function applyTheme(t){
+    theme=t;
+    document.documentElement.setAttribute('data-theme',t);
+    document.getElementById('themeToggle').textContent=t==='light'?'🌙':'☀️';
+    localStorage.setItem('appdeboy-theme',t);
+  }
+  function toggleTheme(){ applyTheme(theme==='light'?'dark':'light'); }
+  applyTheme(theme);
+
+  // ── Modos ──────────────────────────────────────────────
+  let modoActual='simple';
+  function cambiarModo(m){
+    modoActual=m;
+    document.querySelectorAll('.modo-tab').forEach((t,i)=>{
+      t.classList.toggle('active',['simple','doble','comparar'][i]===m);
+    });
+    document.getElementById('modoSimple').style.display  = m==='simple'  ?'block':'none';
+    document.getElementById('modoDoble').style.display   = m==='doble'   ?'block':'none';
+    document.getElementById('modoComparar').style.display= m==='comparar'?'block':'none';
+    document.getElementById('errorBox').style.display='none';
+  }
+
+  // ── Modo simple ────────────────────────────────────────
+  let pctActual=30;
+
+  function selPct(btn,pct){
+    document.querySelectorAll('.pct-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    pctActual=pct;
+    document.getElementById('pctCustom').value='';
+    document.getElementById('sliderPct').value=pct;
+    actualizarSlider(pct);
+    calcSimple();
+  }
+
+  function sliderChange(val){
+    pctActual=parseInt(val);
+    document.getElementById('pctCustom').value=val;
+    document.querySelectorAll('.pct-btn').forEach(b=>b.classList.remove('active'));
+    actualizarSlider(val);
+    calcSimple();
+  }
+
+  function actualizarSlider(val){
+    const pct=((val-0)/(100-0))*100;
+    document.getElementById('sliderPct').style.setProperty('--pct',pct+'%');
+  }
+
+  function calcSimple(custom=false){
+    if(custom){
+      const v=parseFloat(document.getElementById('pctCustom').value);
+      if(!isNaN(v)&&v>=0&&v<=100){
+        pctActual=v;
+        document.getElementById('sliderPct').value=v;
+        actualizarSlider(v);
+        document.querySelectorAll('.pct-btn').forEach(b=>b.classList.remove('active'));
+      }
+    }
+    const precio=parseFloat(document.getElementById('precioSimple').value);
+    if(!precio||precio<=0){ document.getElementById('resSimple').style.display='none'; return; }
+    const descuento=precio*(pctActual/100);
+    const final=precio-descuento;
+    document.getElementById('resSimple').style.display='block';
+    document.getElementById('resAntes').textContent=fmt(precio)+' €';
+    document.getElementById('resPrecio').innerHTML=fmt(final)+'<small> €</small>';
+    document.getElementById('resAhorro').textContent='Ahorras '+fmt(descuento)+' €';
+    document.getElementById('resDescuento').textContent=fmt(descuento)+' €';
+    document.getElementById('resPct').textContent=pctActual+'%';
+  }
+
+  // Actualizar slider inicial
+  actualizarSlider(30);
+
+  // ── Modo doble descuento ───────────────────────────────
+  function calcDoble(){
+    const precio=parseFloat(document.getElementById('precioDoble').value);
+    const p1=parseFloat(document.getElementById('pct1').value);
+    const p2=parseFloat(document.getElementById('pct2').value);
+    document.getElementById('errorBox').style.display='none';
+    if(!precio||precio<=0){mostrarError('Introduce el precio original.');return;}
+    if(isNaN(p1)||isNaN(p2)){mostrarError('Introduce los dos porcentajes de descuento.');return;}
+    const precio1=precio*(1-p1/100);
+    const precio2=precio1*(1-p2/100);
+    const totalDesc=precio-precio2;
+    const pctReal=(totalDesc/precio)*100;
+    document.getElementById('resDoble').style.display='block';
+    document.getElementById('resAntesD').textContent=fmt(precio)+' €';
+    document.getElementById('resPrecioD').innerHTML=fmt(precio2)+'<small> €</small>';
+    document.getElementById('resAhorroD').textContent='Ahorras '+fmt(totalDesc)+' €';
+    document.getElementById('resDescuentoD').textContent=fmt(totalDesc)+' €';
+    document.getElementById('resPctD').textContent=fmt(pctReal)+'%';
+  }
+
+  // ── Modo comparar ──────────────────────────────────────
+  let ofertaId=0;
+
+  function addOferta(nombre='',precio='',descuento=''){
+    const id=++ofertaId;
+    const lista=document.getElementById('ofertasLista');
+    const row=document.createElement('div');
+    row.id=`oferta-${id}`;
+    row.style.cssText='display:grid;grid-template-columns:1fr 90px 80px 28px;gap:8px;align-items:center;margin-bottom:10px;';
+    row.innerHTML=`
+      <input type="text"   placeholder="Tienda / producto" value="${nombre}" style="background:var(--blanco);border:1.5px solid var(--dorado);border-radius:9px;color:var(--texto);font-family:var(--font-b);font-size:13px;padding:9px 10px;outline:none;width:100%;" class="oferta-nombre"/>
+      <input type="number" placeholder="Precio €"          value="${precio}" min="0" step="0.01" style="background:var(--blanco);border:1.5px solid var(--dorado);border-radius:9px;color:var(--texto);font-family:var(--font-b);font-size:13px;padding:9px 10px;outline:none;width:100%;" class="oferta-precio"/>
+      <input type="number" placeholder="Desc %"            value="${descuento}" min="0" max="100" step="0.1" style="background:var(--blanco);border:1.5px solid var(--dorado);border-radius:9px;color:var(--texto);font-family:var(--font-b);font-size:13px;padding:9px 10px;outline:none;width:100%;" class="oferta-desc"/>
+      <button onclick="document.getElementById('oferta-${id}').remove()" style="width:28px;height:28px;border-radius:8px;background:transparent;border:1px solid var(--borde);color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>`;
+    lista.appendChild(row);
+  }
+
+  function calcComparar(){
+    document.getElementById('errorBox').style.display='none';
+    const filas=[...document.querySelectorAll('#ofertasLista > div')];
+    if(filas.length<2){mostrarError('Añade al menos 2 ofertas para comparar.');return;}
+    const ofertas=filas.map(f=>({
+      nombre:f.querySelector('.oferta-nombre').value.trim()||'Sin nombre',
+      precio:parseFloat(f.querySelector('.oferta-precio').value)||0,
+      desc:  parseFloat(f.querySelector('.oferta-desc').value)||0,
+    })).filter(o=>o.precio>0);
+    if(ofertas.length<2){mostrarError('Introduce el precio de al menos 2 ofertas.');return;}
+    const calculadas=ofertas.map(o=>({...o,final:o.precio*(1-o.desc/100),ahorro:o.precio*(o.desc/100)}))
+      .sort((a,b)=>a.final-b.final);
+    const div=document.getElementById('comparadorRes');
+    div.innerHTML='<div style="font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;">Resultado — de mejor a peor precio</div>';
+    div.classList.add('visible');
+    calculadas.forEach((o,i)=>{
+      const item=document.createElement('div');
+      item.className='comp-item';
+      item.style.animationDelay=(i*0.07)+'s';
+      item.innerHTML=`
+        <div class="comp-rank ${i===0?'mejor':''}">${i===0?'★':i+1}</div>
+        <div class="comp-info">
+          <div class="comp-nombre">${o.nombre}</div>
+          <div class="comp-detalle">${fmt(o.precio)} € con ${fmt(o.desc)}% dto.</div>
+        </div>
+        ${o.ahorro>0?`<span class="comp-ahorro-badge">-${fmt(o.ahorro)} €</span>`:''}
+        <div class="comp-precio">${fmt(o.final)} €</div>`;
+      div.appendChild(item);
+    });
+  }
+
+  function fmt(n){ const r=Math.round(n*100)/100; return r%1===0?r.toFixed(0):r.toFixed(2); }
+  function mostrarError(msg){const b=document.getElementById('errorBox');b.textContent=msg;b.style.display='block';}
+
+  // Init ofertas comparador
+  addOferta('Zara',89.99,30);
+  addOferta('El Corte Inglés',95,35);
+  addOferta('Mango',79.95,20);
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw-descuentos.js')
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(e => console.log('SW error:', e));
+  });
+}
+</script>
+</body>
+</html>
