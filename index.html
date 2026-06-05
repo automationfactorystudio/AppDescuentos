@@ -120,6 +120,30 @@
   .error-box{background:rgba(192,57,43,.07);border:1.5px solid rgba(192,57,43,.2);border-left:4px solid #C0392B;border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;color:#8B2A18;display:none;margin-bottom:12px;}
   [data-theme="dark"] .error-box{color:#E8A598;}
 
+
+  /* BANNER PWA INSTALACIÓN */
+  .pwa-banner{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    width:calc(100% - 32px);max-width:480px;
+    background:var(--blanco);border:1.5px solid var(--dorado);
+    border-radius:16px;padding:14px 16px;
+    box-shadow:0 8px 32px rgba(139,94,60,.18);
+    display:flex;align-items:center;gap:12px;
+    z-index:9999;animation:slideUp .4s ease;
+    display:none;
+  }
+  .pwa-banner.visible{display:flex;}
+  @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  .pwa-banner-icon{width:44px;height:44px;background:var(--tierra);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:20px;color:var(--crema);flex-shrink:0;}
+  .pwa-banner-texto{flex:1;}
+  .pwa-banner-titulo{font-size:13px;font-weight:600;color:var(--texto);margin-bottom:2px;}
+  .pwa-banner-sub{font-size:11px;color:var(--muted);}
+  .pwa-banner-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+  .pwa-btn-instalar{padding:7px 14px;background:var(--tierra);color:var(--crema);border:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-b);white-space:nowrap;transition:background .2s;}
+  .pwa-btn-instalar:hover{background:var(--tierra-dk);}
+  .pwa-btn-no{padding:6px 10px;background:transparent;border:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font-b);text-align:center;}
+  .pwa-btn-no:hover{color:var(--tierra);}
+
   footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
   .footer-brand{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--muted);}
   .footer-brand span{color:var(--tierra);}
@@ -407,14 +431,67 @@
   addOferta('Mango',79.95,20);
 </script>
 
+
+<!-- BANNER PWA -->
+<div class="pwa-banner" id="pwaBanner">
+  <div class="pwa-banner-icon">A</div>
+  <div class="pwa-banner-texto">
+    <div class="pwa-banner-titulo">Instala AppDeHoy en tu dispositivo</div>
+    <div class="pwa-banner-sub">Ábrela como app · Sin internet · Sin publicidad</div>
+  </div>
+  <div class="pwa-banner-btns">
+    <button class="pwa-btn-instalar" id="pwaBtnInstalar">⬇ Instalar</button>
+    <button class="pwa-btn-no" id="pwaBtnNo">Ahora no</button>
+  </div>
+</div>
+
 <script>
+// Service Worker
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw-descuentos.js')
-      .then(r => console.log('SW registrado:', r.scope))
+      .then(r => console.log('SW OK:', r.scope))
       .catch(e => console.log('SW error:', e));
   });
 }
+
+// Banner PWA personalizado
+let deferredPrompt = null;
+const banner   = document.getElementById('pwaBanner');
+const btnInst  = document.getElementById('pwaBtnInstalar');
+const btnNo    = document.getElementById('pwaBtnNo');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar banner después de 3 segundos
+  setTimeout(() => banner.classList.add('visible'), 3000);
+});
+
+btnInst.addEventListener('click', async () => {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  banner.classList.remove('visible');
+});
+
+btnNo.addEventListener('click', () => {
+  banner.classList.remove('visible');
+  // No volver a mostrar en esta sesión
+  sessionStorage.setItem('pwa-dismissed', '1');
+});
+
+// No mostrar si ya lo descartó
+if(sessionStorage.getItem('pwa-dismissed')) {
+  // no hacer nada
+}
+
+// Ocultar banner si ya está instalada
+window.addEventListener('appinstalled', () => {
+  banner.classList.remove('visible');
+});
 </script>
+
 </body>
 </html>
